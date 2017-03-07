@@ -2,6 +2,11 @@
 ## Introduction and Foundations
 ## Project: Titanic Survival Exploration
 
+### Project Overview
+Welcome to the Machine Learning Engineer Nanodegree!
+
+In this ***optional*** project, you will create decision functions that attempt to predict survival outcomes from the 1912 Titanic disaster based on each passenger's features, such as sex and age. You will start with a simple algorithm and increase its complexity until you are able to accurately predict the outcomes for at least 80% of the passengers in the provided data. This project will introduce you to some of the concepts of machine learning as you start the Nanodegree program.
+
 ### Install
 
 This project requires **Python 2.7** and the following Python libraries installed:
