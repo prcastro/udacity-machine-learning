@@ -1,4 +1,3 @@
-ud120-projects
-==============
-
-Starter project code for students taking Udacity ud120
+# Project: Analysis of Enron Emails
+## Machine Learning Engineer Nanodegree
+## Model Evaluation and Validation
