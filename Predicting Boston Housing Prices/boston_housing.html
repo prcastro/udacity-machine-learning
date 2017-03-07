@@ -14657,8 +14657,8 @@ mIs1MzMzsw7mYs3MzMysg7lYMzMzM+tg/w85DOvzunTCKAAAAABJRU5ErkJggg==
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><strong>Answer: </strong>K-fold cross-validation is a techinique where we split the dataset in k equal parts and use different combinations for training/testing when trying to find the best hyper parameters. In each of the k iterations, one of the parts is used for test and the rest is used on training.</p>
-<p>The benefit of this approach is that the hyper-parameter optimization don't overfit the test set.</p>
+<p><strong>Answer: </strong>K-fold cross-validation is a techinique where we split the dataset in k equal parts and use different combinations for training/testing when trying to estimate the training/test performance of an algorithm. In each of the k iterations, one of the parts is used for test and the rest is used on training. Each part of the dataset is therefore used only once for validation. The final accuracy (or other performance measures) is computed by averaging the accuracy of each of the k training experiments. This is done both for the test and the training set.</p>
+<p>The benefit of this approach is for hyper-parameter optimization is that we don't overfit the test set. If we use a different test set for each hyper-parameter accuracy test, we expect that the best one performs well also in data we never seen before. Otherwise, if we used only one test set when optimizing the hyper parameters, we could simply find the best hyper-parameter for that specific test set, but not necesseraly one that performs well on unseen data. If we change the test set everytime we change the hyper-parameters, the probability that this occur is low.</p>
 
 </div>
 </div>
