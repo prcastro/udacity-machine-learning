@@ -1,2 +1,3 @@
-# udacity-machine-learning
-Submissions for Machine Learning Nanodegree on Udacity
+# Udacity Machine Learning Nanodegree
+
+Submissions for Machine Learning Engineer Nanodegree on Udacity
