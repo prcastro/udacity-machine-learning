@@ -94,3 +94,6 @@ ENV/
 # zips
 *.tar
 *.tar.gz
+
+# data
+/Capstone/data/*
