@@ -23,7 +23,7 @@ The features are anonymized, in the sense we don't know the meaning of any of th
 
 ### Solution Statement
 
-Any techiniques for classification, in special binary classification can be done to solve this problem. As an example, logisitic regression, boosting methods, nayve bayes, k-nearest-neighbors, and all the other algorithms we saw in class should be really useful to extract the pattern from this dataset. Also, since there are a lot of features, it could be a nice playground for classic dimensionality reduction techiniques and also neural embeddings, as well as much of the regularization techiniques we have available for the models we use. Ensemble techiniques are usually successfull in this kind of problems, so it could be a nice opportunity to work with stacking models.
+Any techniques for classification, in special binary classification can be done to solve this problem. As an example, logisitic regression, boosting methods, nayve bayes, k-nearest-neighbors, and all the other algorithms we saw in class should be really useful to extract the pattern from this dataset. Also, since there are a lot of features, it could be a nice playground for classic dimensionality reduction techniques and also neural embeddings, as well as much of the regularization techniques we have available for the models we use. Ensemble techniques are usually successful in this kind of problems, so it could be a nice opportunity to work with stacking models.
 
 ### Benchmark Model
 
