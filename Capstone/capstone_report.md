@@ -19,7 +19,11 @@ However, especially in Brazil, this is a rather expensive business for the final
 
 ### Problem Statement
 
-In this project we try to solve the problem of telling apart costumers that drive safely from those who don't based on the information held at the insurance company. To accomplish this, we will use several classification techniques from Machine Learning, including feature engineering and data cleaning steps. First, we will explore the dataset and establish a benchmark solution, then proceed screening several classification algorithms. Then we will explore several approaches for data cleaning and feature engineering, measure their impact on the final result. After that we will also try to optimize the hyper-parameters of the chosen algorithms. After that, we will produce an ensemble of those models, such that the final answer overfits less the training set.  
+In this project we try to solve the problem of telling apart costumers that drive safely from those who don't based on the information held at the insurance company. To accomplish this, we will use several classification techniques from Machine Learning, including feature engineering and data cleaning steps.
+
+First, we will explore the dataset and establish a benchmark solution, then proceed screening several classification algorithms. Then we will explore several approaches for data cleaning and feature engineering, measure their impact on the final result. After that we will also try to optimize the hyper-parameters of the chosen algorithms. After that, we will produce an ensemble of those models, such that the final answer overfits less the training set.  
+
+The expected outcome of this project is a model ensemble, featuring several classification models and some data preprocessing steps. This kind of solution is widely used in Kaggle, being applied in most of the competition winners' solutions.
 
 <!-- In this section, you will want to clearly define the problem that you are trying to solve, including the strategy (outline of tasks) you will use to achieve the desired solution. You should also thoroughly discuss what the intended solution will be for this problem. Questions to ask yourself when writing this section:
 - _Is the problem statement clearly defined? Will the reader understand what you are expecting to solve?_
@@ -34,6 +38,8 @@ $$Gini = 2*AUC - 1$$
 
 Where AUC is the area under the ROC curve as a proportion of the total area (which is one). In practice this means that the Gini Coefficient is the proportion of the area under the ROC curve and the total area, but only considering the region above the random line in the ROC. The Gini Coefficient of 1 indicates a perfect model, and of zero indicates one that performs as well as random guess. Less than that, the model performs worse than random guess. The area under the ROC curve is a very common way of measuring performance of binary classification tasks[[6]](http://home.comcast.net/~tom.fawcett/public_html/papers/ROC101.pdf), and the Gini Coefficient is a simple linear transformation of it.
 
+The advantage of using this metric is that we have a clear benchmark, below which the answer is unacceptable (random guess), and also we would be able to measure our performance accounting for the target distribution on the test set. If the target distribution is highly skewed, metrics like accuracy would give an almost perfect score to solutions that simply guess the most common class. On the other hand, when using the Gini Coefficient we simply compute the false/true positive rates[[7]](https://en.wikipedia.org/wiki/Sensitivity_and_specificity#Definitions), which are insensitive to class imbalance.
+
 <!-- In this section, you will need to clearly define the metrics or calculations you will use to measure performance of a model or result in your project. These calculations and metrics should be justified based on the characteristics of the problem and problem domain. Questions to ask yourself when writing this section:
 - _Are the metrics you’ve chosen to measure the performance of your models clearly discussed and defined?_
 - _Have you provided reasonable justification for the metrics chosen based on the problem and solution?_ -->
@@ -44,11 +50,22 @@ Where AUC is the area under the ROC curve as a proportion of the total area (whi
 
 ### Data Exploration
 
-As mentioned before, we use the dataset provided by Porto Seguro, containing dozens of features for more than five hundred thousand clients, alongside with a flag if that client claimed of not. The data is anonymous: we can't neither get any information about the client (apart from an ID) nor from the features, since all of them are encoded and names in a way that it's impossible to guess its meaning.
+As mentioned before, we use the dataset provided by Porto Seguro, containing 57 features for 595212 clients, alongside with a flag if that client claimed of not. The data is anonymous: we can't neither get any information about the client (apart from an ID) nor from the features, since all of them are encoded and names in a way that it's impossible to guess its meaning.
 
 Some information, however, is still present in the feature names. Features has part of the name indicating whether it's a individual features (with the string "ind" in the middle of the name), a feature about the car ("car") or a calculated feature, made by Porto Seguro based on other features ("calc"). Feature engineering can be hard, specially when we don't have the true meaning of the features, but we should be careful when using this kind of feature, as it may only introduce noise to some of our models (specially non-linear ones, that can discover those relations as part of the learning process).
 
 Another information present in the names of the features in our dataset is its type. The suffix of the name indicates whether a feature is categorical (suffixed with "cat"), binary ("bin") or numeric (no suffix, and can be either a floating point or an integer feature). This raises another concern that we may address in our solution: categorical features (specially non-binary ones) often require some form of encoding -- if we encode these variables as numbers, we are implying order between the categories, which may not be the case.
+
+A sample of the dataset is shown in the following table:
+
+| id | target | ps_ind_01 | ps_ind_02_cat | ps_ind_03 | ps_ind_04_cat | ps_ind_05_cat | ps_ind_06_bin | ps_ind_07_bin | ps_ind_08_bin | ps_ind_09_bin | ps_ind_10_bin | ps_ind_11_bin | ps_ind_12_bin | ps_ind_13_bin | ps_ind_14 | ps_ind_15 | ps_ind_16_bin | ps_ind_17_bin | ps_ind_18_bin | ps_reg_01 | ps_reg_02 | ps_reg_03          | ps_car_01_cat | ps_car_02_cat | ps_car_03_cat | ps_car_04_cat | ps_car_05_cat | ps_car_06_cat | ps_car_07_cat | ps_car_08_cat | ps_car_09_cat | ps_car_10_cat | ps_car_11_cat | ps_car_11 | ps_car_12    | ps_car_13          | ps_car_14           | ps_car_15    | ps_calc_01 | ps_calc_02 | ps_calc_03 | ps_calc_04 | ps_calc_05 | ps_calc_06 | ps_calc_07 | ps_calc_08 | ps_calc_09 | ps_calc_10 | ps_calc_11 | ps_calc_12 | ps_calc_13 | ps_calc_14 | ps_calc_15_bin | ps_calc_16_bin | ps_calc_17_bin | ps_calc_18_bin | ps_calc_19_bin | ps_calc_20_bin |
+|----|--------|-----------|---------------|-----------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|-----------|-----------|---------------|---------------|---------------|-----------|-----------|--------------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|-----------|--------------|--------------------|---------------------|--------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|----------------|----------------|----------------|----------------|----------------|----------------|
+| 7  | 0      | 2         | 2             | 5         | 1             | 0             | 0             | 1             | 0             | 0             | 0             | 0             | 0             | 0             | 0         | 11        | 0             | 1             | 0             | 0.7       | 0.2       | 0.7180703307999999 | 10            | 1             | -1            | 0             | 1             | 4             | 1             | 0             | 0             | 1             | 12            | 2         | 0.4          | 0.8836789178       | 0.3708099244        | 3.6055512755 | 0.6        | 0.5        | 0.2        | 3          | 1          | 10         | 1          | 10         | 1          | 5          | 9          | 1          | 5          | 8          | 0              | 1              | 1              | 0              | 0              | 1              |
+| 9  | 0      | 1         | 1             | 7         | 0             | 0             | 0             | 0             | 1             | 0             | 0             | 0             | 0             | 0             | 0         | 3         | 0             | 0             | 1             | 0.8       | 0.4       | 0.7660776723       | 11            | 1             | -1            | 0             | -1            | 11            | 1             | 1             | 2             | 1             | 19            | 3         | 0.316227766  | 0.6188165191       | 0.3887158345        | 2.4494897428 | 0.3        | 0.1        | 0.3        | 2          | 1          | 9          | 5          | 8          | 1          | 7          | 3          | 1          | 1          | 9          | 0              | 1              | 1              | 0              | 1              | 0              |
+| 13 | 0      | 5         | 4             | 9         | 1             | 0             | 0             | 0             | 1             | 0             | 0             | 0             | 0             | 0             | 0         | 12        | 1             | 0             | 0             | 0.0       | 0.0       | -1.0               | 7             | 1             | -1            | 0             | -1            | 14            | 1             | 1             | 2             | 1             | 60            | 1         | 0.316227766  | 0.6415857163       | 0.34727510710000004 | 3.3166247904 | 0.5        | 0.7        | 0.1        | 2          | 2          | 9          | 1          | 8          | 2          | 7          | 4          | 2          | 7          | 7          | 0              | 1              | 1              | 0              | 1              | 0              |
+| 16 | 0      | 0         | 1             | 2         | 0             | 0             | 1             | 0             | 0             | 0             | 0             | 0             | 0             | 0             | 0         | 8         | 1             | 0             | 0             | 0.9       | 0.2       | 0.5809475019       | 7             | 1             | 0             | 0             | 1             | 11            | 1             | 1             | 3             | 1             | 104           | 1         | 0.3741657387 | 0.5429487899000001 | 0.2949576241        | 2.0          | 0.6        | 0.9        | 0.1        | 2          | 4          | 7          | 1          | 8          | 4          | 2          | 2          | 2          | 4          | 9          | 0              | 0              | 0              | 0              | 0              | 0              |
+| 17 | 0      | 0         | 2             | 0         | 1             | 0             | 1             | 0             | 0             | 0             | 0             | 0             | 0             | 0             | 0         | 9         | 1             | 0             | 0             | 0.7       | 0.6       | 0.840758586        | 11            | 1             | -1            | 0             | -1            | 14            | 1             | 1             | 2             | 1             | 82            | 3         | 0.3160696126 | 0.5658315025       | 0.3651027253        | 2.0          | 0.4        | 0.6        | 0.0        | 2          | 2          | 6          | 3          | 10         | 2          | 12         | 3          | 1          | 1          | 3          | 0              | 0              | 0              | 1              | 1              | 0              |
+
 
 Missing values is another concern we should have about this particular dataset. Some categorical and numerical data have missing values, with a total of thirteen features presenting this kind of issue. The number of missing values seems to vary (from a few percent up to more than 70% in one of the columns). There is some structure, however, in the way that the missing value work. The presence of missing values in one of the features may reduce or increase the chance that we see a missing value in other column. With all these properties, the way we will handle missing values may be of crucial importance for some algorithms.
 
@@ -67,7 +84,30 @@ When inspecting the joint distribution between the variables and the target, we 
 
 ### Exploratory Visualization
 
+First, as a manner to easily detect patterns in our data, we inspect the joint distribution of our variables. Taking a look at the numerical variables, we can see that most of them are conditionally independent, however we can detect dependencies in pairs like 'ps_calc_10' and 'ps_calc_08'. Those are indications that we have a high mutual information between those pair of variables, and that knowing one could be enough to detecting a pattern about the target.
 
+![categorical features distributions](figures/variable_distribution.png)
+
+Another way of detecting such redundancies is plotting a correlation matrix between those variables. This will give a more objective way of measuring the redundancies. As we can see, some variable are redundant and probably would add little to no information about the target on our models.
+
+![correlation matrix](figures/correlations.png)
+
+Another important information when modelling our problem is the distribution and amount of missing data we have on this dataset. We can't know if the missing data is missing at random, or the missingness have a meaning, but we can at least inspect its distribution before deciding the approach, specially since the models we tried handle missingness in different way.
+
+The first plot is the distribution of missing data
+ throughout the dataset. Here we can see that we have a lot of features without missing data, but a bunch of them do. We highlight `ps_car_03_cat` and  `ps_car_05_cat`, that are missing for most of the customers.
+
+ ![missing distribution](figures/nan_distribution.png)
+
+The data completeness column indicates that those missing values are most likely not missing at random, since most of the times the customer have not one, but several missing features at once.
+
+Another important aspect to analyze about this problem is the joint distribution between features and targets. When we inspect those distributions we can see that on some variables (e.g. `ps_calc_01`) we have a clear difference between the dsitribution of the feature values when the class is positive and when the class is negative.
+
+Inspecting this is important since we can have an insight about whether the problem is easy (most variables are have very differet distributions) or not. In this case, those relations are more nuanced.
+
+![target joint distribution with numerical features](figures/target_vs_num.png)
+
+We could have done the same plots for the categorial distribution, only to arrive at the same kind of conclusion.
 
 <!-- In this section, you will need to provide some form of visualization that summarizes or extracts a relevant characteristic or feature about the data. The visualization should adequately support the data being used. Discuss why this visualization was chosen and how it is relevant. Questions to ask yourself when writing this section:
 - _Have you visualized a relevant characteristic or feature about the dataset or input data?_
@@ -202,31 +242,6 @@ Both results are so different that is reasonable to affirm that the benchmark wa
 <!-- _(approx. 1-2 pages)_ -->
 
 ### Free-Form Visualization
-
-First, as a manner to easily detect patterns in our data, we inspect the joint distribution of our variables. Taking a look at the numerical variables, we can see that most of them are conditionally independent, however we can detect dependencies in pairs like 'ps_calc_10' and 'ps_calc_08'. Those are indications that we have a high mutual information between those pair of variables, and that knowing one could be enough to detecting a pattern about the target.
-
-![categorical features distributions](figures/variable_distribution.png)
-
-Another way of detecting such redundancies is plotting a correlation matrix between those variables. This will give a more objective way of measuring the redundancies. As we can see, some variable are redundant and probably would add little to no information about the target on our models.
-
-![correlation matrix](figures/correlations.png)
-
-Another important information when modelling our problem is the distribution and amount of missing data we have on this dataset. We can't know if the missing data is missing at random, or the missingness have a meaning, but we can at least inspect its distribution before deciding the approach, specially since the models we tried handle missingness in different way.
-
-The first plot is the distribution of missing data
- throughout the dataset. Here we can see that we have a lot of features without missing data, but a bunch of them do. We highlight `ps_car_03_cat` and  `ps_car_05_cat`, that are missing for most of the customers.
-
- ![missing distribution](figures/nan_distribution.png)
-
-The data completeness column indicates that those missing values are most likely not missing at random, since most of the times the customer have not one, but several missing features at once.
-
-Another important aspect to analyze about this problem is the joint distribution between features and targets. When we inspect those distributions we can see that on some variables (e.g. `ps_calc_01`) we have a clear difference between the dsitribution of the feature values when the class is positive and when the class is negative.
-
-Inspecting this is important since we can have an insight about whether the problem is easy (most variables are have very differet distributions) or not. In this case, those relations are more nuanced.
-
-![target joint distribution with numerical features](figures/target_vs_num.png)
-
-We could have done the same plots for the categorial distribution, only to arrive at the same kind of conclusion.
 
 <!-- In this section, you will need to provide some form of visualization that emphasizes an important quality about the project. It is much more free-form, but should reasonably support a significant result or characteristic about the problem that you want to discuss. Questions to ask yourself when writing this section:
 - _Have you visualized a relevant or important quality about the problem, dataset, input data, or results?_
