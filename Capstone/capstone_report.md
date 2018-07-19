@@ -57,8 +57,6 @@ When looking on the target distribution, we also find another characteristic to 
 The distribution of the variables was also investigated. We looked for some ill-shaped distributions, containing outliers, as well as co-linear variables that could be redundant. However, when we look at the variables and their joint distributions, we found only 11% of the examples were outliers in at least on features (univariate outlier, and these examples could not be outliers when considering all variables at once). As of the joint distributions, we didn't find any specially co-linear variable. When dealing with linear methods, we shall remember this, as we could deal with this kind of situation by using a different loss function such as some regularization technique as adding the L1 norm to our loss function. However, when looking for correlation between numerical columns, we found that some of the variables (for example `ps_car_12` and `ps_car_13`) have high positive correlation while some (like `ps_ind_14` and `ps_ind_15`) have high positive correlation.
 
 When inspecting the joint distribution between the variables and the target, we found that a significant number of variables have have different distributions depending of the target, but the difference is always very weak. This means that we shouldn't expect this classification problem to be easily solved. Those small effects should be more easily dealt with by using some non-linear technique as boosting or bagging.
-<!-- Falar da relação entre variaveis e target -->
-
 
 
 <!-- In this section, you will be expected to analyze the data you are using for the problem. This data can either be in the form of a dataset (or datasets), input data (or input files), or even an environment. The type of data should be thoroughly described and, if possible, have basic statistics and information presented (such as discussion of input features or defining characteristics about the input or environment). Any abnormalities or interesting qualities about the data that may need to be addressed have been identified (such as features that need to be transformed or the possibility of outliers). Questions to ask yourself when writing this section:
@@ -204,6 +202,32 @@ Both results are so different that is reasonable to affirm that the benchmark wa
 <!-- _(approx. 1-2 pages)_ -->
 
 ### Free-Form Visualization
+
+First, as a manner to easily detect patterns in our data, we inspect the joint distribution of our variables. Taking a look at the numerical variables, we can see that most of them are conditionally independent, however we can detect dependencies in pairs like 'ps_calc_10' and 'ps_calc_08'. Those are indications that we have a high mutual information between those pair of variables, and that knowing one could be enough to detecting a pattern about the target.
+
+![categorical features distributions](figures/variable_distribution.png)
+
+Another way of detecting such redundancies is plotting a correlation matrix between those variables. This will give a more objective way of measuring the redundancies. As we can see, some variable are redundant and probably would add little to no information about the target on our models.
+
+![correlation matrix](figures/correlations.png)
+
+Another important information when modelling our problem is the distribution and amount of missing data we have on this dataset. We can't know if the missing data is missing at random, or the missingness have a meaning, but we can at least inspect its distribution before deciding the approach, specially since the models we tried handle missingness in different way.
+
+The first plot is the distribution of missing data
+ throughout the dataset. Here we can see that we have a lot of features without missing data, but a bunch of them do. We highlight `ps_car_03_cat` and  `ps_car_05_cat`, that are missing for most of the customers.
+
+ ![missing distribution](figures/nan_distribution.png)
+
+The data completeness column indicates that those missing values are most likely not missing at random, since most of the times the customer have not one, but several missing features at once.
+
+Another important aspect to analyze about this problem is the joint distribution between features and targets. When we inspect those distributions we can see that on some variables (e.g. `ps_calc_01`) we have a clear difference between the dsitribution of the feature values when the class is positive and when the class is negative.
+
+Inspecting this is important since we can have an insight about whether the problem is easy (most variables are have very differet distributions) or not. In this case, those relations are more nuanced.
+
+![target joint distribution with numerical features](figures/target_vs_num.png)
+
+We could have done the same plots for the categorial distribution, only to arrive at the same kind of conclusion.
+
 <!-- In this section, you will need to provide some form of visualization that emphasizes an important quality about the project. It is much more free-form, but should reasonably support a significant result or characteristic about the problem that you want to discuss. Questions to ask yourself when writing this section:
 - _Have you visualized a relevant or important quality about the problem, dataset, input data, or results?_
 - _Is the visualization thoroughly analyzed and discussed?_
