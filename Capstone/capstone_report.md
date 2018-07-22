@@ -116,15 +116,32 @@ We could have done the same plots for the categorial distribution, only to arriv
 
 ### Algorithms and Techniques
 
-This is a classic classification problem, and therefore, several classification algorithms can be used to solve it. The most basic one is the Logistic Regression. This linear model will use linear combinations of the features to predict the probability of each of the two target classes. While simple, it's very fast to train and will detect any simple linear pattern in the dataset. Also, it's very easy to interpret, since we can tell what happens to the target when changing one of the variables. When training a logistic regression, we are also able to add a regularization term to its loss function. If we use the L1 term, the solution is most likely to be sparse. On the other hand, if we use the L2 term, we only force that each of the parameters of the linear model must be small, but not necessarily zero. On the other hand, the L2 regularization results in more robust solutions that the L1 regularization, while being more computationally efficient.
+This is a classic classification problem, and therefore, several classification algorithms can be used to solve it. The most basic one is the Logistic Regression. This linear model will use linear combinations of the features to predict the probability of each of the two target classes. While simple, it's very fast to train and will detect any simple linear pattern in the dataset. The logistic model models the probability of a sample $i$ as:
+
+$$\operatorname{logit}(\mathbb{E}[Y_i\mid \mathbf{X}_i]) = \operatorname{logit}(p_i)=\ln\left(\frac{p_i}{1-p_i}\right) = \boldsymbol\beta \cdot \mathbf{X}_i$$
+
+
+The algorithm basically works by finding the maximum likelihood for the samples, that is, maximizing $p(y|\beta, x)$. Also, it's very easy to interpret, since we can tell what happens to the target when changing one of the variables. When training a logistic regression, we are also able to add a regularization term to its loss function. If we use the L1 regularization term, the solution is most likely to be sparse. On the other hand, if we use the L2 term, we only force that each of the parameters of the linear model must be small, but not necessarily zero. On the other hand, the L2 regularization results in more robust solutions that the L1 regularization, while being more computationally efficient.
 
 However, as we noted in the previous sections, a linear model shouldn't be able to explain the relation between the target and the features. Therefore, we will also test several non-linear models, such as boosting, bagging, neural networks and ensemble of many models.
 
-Boosting models consist of iteratively learning weak models (usually decision trees) and then combining those weak models in a stronger learner. One example of this is the gradient boosting (implemented in XGBoost and LightGBM for example) in which each weak learner will fit the residual $y - F(x)$ of the current strong learner $F$. Another boosting technique used in this project is the AdaBoost, in which each weak learner are tweaked in favor of examples missclassified by previous learners. Those models are nonlinear, since they use decision trees and ensemble techniques to combine learners, therefore they could better capture the patterns in our dataset. Also, this techniques effectively reduce bias (and variance) and can be better in generalizing to the test set.
+Boosting models consist of iteratively learning weak models (usually decision trees) and then combining those weak models in a stronger learner. One example of this is the gradient boosting (implemented in XGBoost and LightGBM for example) in which each weak learner will fit the residual $y - F(x)$ of the current strong learner $F$. The optimization step is such that we compute the residuals for each sample, fit a new base learner $h$ to the residuals and compute the multiplier $\gamma$ so that:
+
+$$\hat{F} = \sum_m \gamma_m h_m(x) + const$$
+
+Another boosting technique used in this project is the AdaBoost, in which each weak learner are tweaked in favor of examples missclassified by previous learners. The optimization algorithm is similar to gradient boosting, but using an exponential loss $\sum_i e^{y_i f(x_i)}$.
+
+Those models are nonlinear, since they use decision trees and ensemble techniques as learners, therefore they could better capture the patterns in our dataset. Also, this techniques effectively reduce bias (and variance) and can be better in generalizing to the test set.
+
+Neural networks are non-linear models comprised of several layers, each computing linear combinations and using a non-linear function of top of that to compute its output:
+
+$$\sigma({\sum_i{w_i x_i}}) = y_i$$
+
+The coefficients of those linear combinations are optimized buy computing the gradients of a loss, in an hierarchical manner, and then descending the gradient. This minimizes the error, and achieves a local optima that tends to be similar to the global one. Neural networks achieved state of the art performance on machine learning problems related to sound and image classification, and play important role in new reinforcement learning techniques.
 
 On the neural network side, we use entity embedding [[7]](https://arxiv.org/abs/1604.06737) to encode our categorical variables, allowing for fast neural network training. This technique was previously applied to classification problems and was able to reach third place in a competition with very simple features[[8]](https://github.com/entron/entity-embedding-rossmann/tree/kaggle).
 
-Other algorithms will also be tested, like Random Forest and Support Vector Machines (RBF kernel). These models not only could improve our metrics alone, but could also be using in the final ensemble to improve generalization. The final model will be an ensemble of several of those models. This could reduce the variance and improve generalization a little bit, and is usually used in Kaggle competitions.
+Other algorithms will also be tested, like Random Forest and Support Vector Machines (RBF kernel). These models not only could improve our metrics alone, but could also be used in the final ensemble to improve generalization. The final model will be an ensemble of several of those models. This could reduce the variance and improve generalization a little bit, and is usually used in Kaggle competitions.
 
 
 
@@ -192,7 +209,7 @@ For the entity embedding part, following this implementation[[11]](https://www.k
 
 ### Refinement
 
-First we tried several algorithm (as see in notebook \#3). The result is that gradient boosting was indeed the best way to deal with this dataset, giving us the highest Normalized Gini (0.2700) when compared to algorithms like AdaBoost (0.2565), Random Forest (0.069), Multi-layer Perceptron (0.2407) and K-Nearest-Neighbors (0.0277).
+First (as seen in notebook \#3) we tried several algorithms contained in the Python library `scikit-learn`. We used the classifiers `RandomForestClassifier`, `KNeighborsClassifier`, `MLPClassifier`, `GradientBoostingClassifier`, `AdaBoostClassifier` and `SVC` from `sklearn`, all with default parameters. The `lightGBM` and `XGBoost` libraries' classifiers were also used with their default parameters. The result is that gradient boosting was indeed the best way to deal with this dataset, giving us the highest Normalized Gini (0.2700) when compared to algorithms like AdaBoost (0.2565), Random Forest (0.069), Multi-layer Perceptron (0.2407) and K-Nearest-Neighbors (0.0277).
 
 For the boosting algorithm, we started with 0.2700 of Normalized Gini, without dealing with missing data, and also without categorical encoding or balancing the dataset. We proceeded to find the best way to deal with the unbalanced target, just to find that all of the techniques we tried (under-sampling, over-sampling with SMOTE or class weights) had no positive impact on the performance (notebook \#4). After experimenting with techniques of dealing with missing values, we found that filling with the mean would raise the result to 0.2718 of Normalized Gini (notebook \#5).
 
@@ -200,7 +217,7 @@ We then focused on the encoding of the categorical features (notebook \#6). We e
 
  We proceeded to check whether feature normalization would affect performance (notebook \#7), and found that neither Standard Scaling, Robust Scaling, Max-Abs Scaling nor Min-Max Scaling lead to any improvements on this particular dataset. The same can be said about dimensionality reduction algorithms like PCA and truncated SVD (notebook \#8).
 
-As the last step, we performed the implementation of a bagging ensemble model, so that our best solutions would be combined to create a better model. The improvement with this technique was sensible, increasing predictive power while reducing overfitting.
+As the last step, we performed the implementation of a bagging ensemble model, so that our best solutions would be combined to create a better model. This was done by simply weighting the NNs, XGBs and Gradient Boosting scores with 0.4, 0.4 and 0.2 respectively. This tuning was done by either hand and by using a logistic regression on top of the scores. However, those hand-made values ended-up having the best score on the test set. The improvement with this technique was sensible, increasing predictive power while reducing overfitting.
 
 <!-- In this section, you will need to discuss the process of improvement you made upon the algorithms and techniques you used in your implementation. For example, adjusting parameters for certain models to acquire improved solutions would fall under the refinement category. Your initial and final solutions should be reported, as well as any significant intermediate results as necessary. Questions to ask yourself when writing this section:
 - _Has an initial solution been found and clearly reported?_
@@ -213,11 +230,15 @@ As the last step, we performed the implementation of a bagging ensemble model, s
 
 ### Model Evaluation and Validation
 
-After a series of Hyper-Parameter optimization steps for several models, we discovered that the best model for our problem is an ensemble of a Neural Network with an embedding layer (as described in the implementation section) with a Gradient Boosting model. Using this setup, we arrived at a mean Normalized Gini of ~0.28 across several runs with different train/test splits.
+After a series of Hyper-Parameter optimization steps for several models, we discovered that the best model for our problem is an ensemble of a Neural Network with an embedding layer (as described in the implementation section) with a Gradient Boosting model. The final neural network used in this is comprised of the empbedding layer (with a dense layer with 16 neurons), followed by 4 dense layers with 80, 20, 10 and 1 neuron respectively. All but the last layer had `relu` activation and a dropout rate varying from 0.35 for the first layer to 0.15 of the other two hidden layers. We used binary crossentropy as loss, and optimized with the ADAM algorithm. The Gradient Boosting was performed by using both the `scikit-learn` default implementation and the XGBoost library (all with default parameters as stated above). The ensemble was performed with a bagging algorithm, with the weights being decided by hand to be 0.4 for the NN, 0.4 for XGBoost and 0.2 for the `GradientBoostingClassifier`.
+
+Using this setup, we arrived at a mean Normalized Gini of ~0.28 across several runs with different train/test splits.
 
 This indicates that this specific model is robust, since changes to the train/test-set choices didn't affect the results that much. The result is a model that has a good generalization power, and tends to have the same performance on unseen data.
 
-It's important to see that the ensemble of the model was extremely important to reach such  performance. No model alone could reach more than 0.275 consistently. However, by combining models that don't have much correlation between them, we can improve our predictive power while increasing our generalization capacity. Ensemble models are less prone to overfitting, since all of our models would have to agree before predicting the class of a data point.
+Those two models models (Neural Networks and Gradient Boosting) were chosen for the ensemble since they were very performant individually, but also because they are rather different models in the way they model the posterior distribution. This means that, when one of the models is bad at identifying a pattern on a particular region of the feature space, the other model could perform much better. Ensemble models are less prone to overfitting, since all of our models would have to agree before predicting the class of a data point.
+
+It's important to see that the ensemble of the model was extremely important to reach such performance. No model alone could reach more than 0.275 consistently. However, by combining models that don't have much correlation between them, we can improve our predictive power while increasing our generalization capacity.
 
 <!-- In this section, the final model and any supporting qualities should be evaluated in detail. It should be clear how the final model was derived and why this model was chosen. In addition, some type of analysis should be used to validate the robustness of this model and its solution, such as manipulating the input data or environment to see how the model’s solution is affected (this is called sensitivity analysis). Questions to ask yourself when writing this section:
 - _Is the final model reasonable and aligning with solution expectations? Are the final parameters of the model appropriate?_
