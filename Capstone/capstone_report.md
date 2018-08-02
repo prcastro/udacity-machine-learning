@@ -1,7 +1,7 @@
 # Machine Learning Engineer Nanodegree
 ## Capstone Project
 Paulo Roberto de Oliveira Castro
-October 17th, 2017
+August 1st, 2018
 
 ## I. Definition
 <!-- _(approx. 1-2 pages)_ -->
@@ -263,6 +263,23 @@ Both results are so different that is reasonable to affirm that the benchmark wa
 <!-- _(approx. 1-2 pages)_ -->
 
 ### Free-Form Visualization
+
+As a form of visualizing our results we are going to see how our predictions look like in the test data. Since our problem problem is binary, the predictions can be represented in what is called a confusion matrix: we plot a matrix with the number of occurrences in each quadrant, defined by the `true` label of the example and the `predicted` label.
+
+In this case, we have a matrix that is highly skewed for the first quadrant, which is the `true` label 0 and the `predicted` label zero. Although this is a correct prediction, we don't want the model to predict always the same label. Luckly, in this case, we have a few cases of `true` label 1 and `predicted` label also 1, meaning that in some cases our model was able to make a correct positive prediction.
+
+#### Confusion Matrix
+![Confusion Matrix](figures/confusion.png)
+
+It is also important to notice that this matrix was generated based on a choice of threshold, above which we consider the prediction score to result in positive label. In our case, we chose 0.5 just to exemplify the kind of prediction we make with this model, but when deploy a model like this we usually choose the threshold based on a business metric, such as the return of money that choosing a certain threshold would give us. Defining such a metric is beyond the scope of this project, but is certainly necessary to use this kind of model.
+
+Also on the visualization of our results, an important metric to have is usually the importance of the features. We can see which features are more or less important and, based on that, we can decide whether it is worth it to keep or throw away a certain feature and what would be the impact of doing that on the model's performance.
+
+![Feature Importance](figures/feature_importances.png)
+
+In the case of the XGBoost model, one of the most important model of our stack, we can use the default implementation of feature importance to evaluate that. The metric used in this case (the default `weight` metric in XGBoost library, here called the `F score`), show how many times a tree from our boosting algorithm was split using this variable. Therefore, the higher the score, the more important is the variable.
+
+While there are many other ways to measure the importance of a variable on an XGBoost model (using `gain`, `cover` or even libraries like `shap`), this metric is easy to grasp and usually enables the user to decide what feature are more or less important for the model.
 
 <!-- In this section, you will need to provide some form of visualization that emphasizes an important quality about the project. It is much more free-form, but should reasonably support a significant result or characteristic about the problem that you want to discuss. Questions to ask yourself when writing this section:
 - _Have you visualized a relevant or important quality about the problem, dataset, input data, or results?_
